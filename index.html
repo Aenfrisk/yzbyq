@@ -1,11 +1,751 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>欢迎来到我的网站</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>宇宙语编码/解码器</title>
+    <style>
+        :root {
+            --bg-color: #f5f5f5;
+            --text-color: #333;
+            --panel-bg: #fff;
+            --border-color: #ddd;
+            --button-bg: #4a6fa5;
+            --button-hover: #3a5a80;
+            --button-text: #fff;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --error-color: #dc3545;
+            --accent-color: #6c63ff;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #222;
+            --text-color: #eee;
+            --panel-bg: #333;
+            --border-color: #555;
+            --button-bg: #5a7fa5;
+            --button-hover: #4a6a90;
+            --success-color: #3dbb61;
+            --warning-color: #e9b436;
+            --error-color: #e25c6c;
+            --accent-color: #8a85ff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            transition: background-color 0.3s, color 0.3s;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        h1 {
+            margin: 0;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .theme-toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .theme-label {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .theme-icon {
+            font-size: 20px;
+            transition: transform 0.3s;
+        }
+
+        .theme-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .theme-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--accent-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .description {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: var(--panel-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .expandable {
+            margin-top: 15px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 15px;
+        }
+
+        .expand-toggle {
+            background: none;
+            border: none;
+            color: var(--accent-color);
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 0;
+        }
+
+        .expand-toggle:hover {
+            text-decoration: underline;
+        }
+
+        .expand-icon {
+            transition: transform 0.3s;
+        }
+
+        .expanded .expand-icon {
+            transform: rotate(180deg);
+        }
+
+        .expand-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .expanded .expand-content {
+            max-height: 1000px;
+        }
+
+        .author {
+            margin-top: 15px;
+            font-style: italic;
+            text-align: right;
+            color: var(--accent-color);
+            font-weight: 500;
+        }
+
+        .panel {
+            background-color: var(--panel-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            margin-top: 0;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            color: var(--text-color);
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--panel-bg);
+            color: var(--text-color);
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 16px;
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        button:hover {
+            background-color: var(--button-hover);
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.success {
+            background-color: var(--success-color);
+        }
+
+        button.warning {
+            background-color: var(--warning-color);
+            color: #333;
+        }
+
+        .info-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .info-item {
+            padding: 15px;
+            background-color: rgba(0, 0, 0, 0.05);
+            border-radius: 6px;
+            border-left: 4px solid var(--button-bg);
+        }
+
+        .info-label {
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .info-value {
+            font-family: monospace;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .flex-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .flex-container > div {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .status {
+            padding: 10px 12px;
+            border-radius: 4px;
+            margin-top: 10px;
+            display: none;
+            font-weight: 500;
+        }
+
+        .status.success {
+            background-color: rgba(40, 167, 69, 0.2);
+            color: var(--success-color);
+            display: block;
+            border-left: 4px solid var(--success-color);
+        }
+
+        .status.error {
+            background-color: rgba(220, 53, 69, 0.2);
+            color: var(--error-color);
+            display: block;
+            border-left: 4px solid var(--error-color);
+        }
+
+        .cosmic-chars {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.03);
+            border-radius: 6px;
+        }
+
+        .cosmic-char {
+            font-size: 24px;
+            padding: 5px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--panel-bg);
+            text-align: center;
+            min-width: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .flex-container {
+                flex-direction: column;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+            }
+            
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .theme-toggle-container {
+                align-self: flex-end;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Hello, 这里是我的GitHub Pages网站！</h1>
-    <p>这是我的第一个网页。</p>
+    <div class="container">
+        <header>
+            <h1>🌌 宇宙语编码/解码器</h1>
+            <div class="theme-toggle-container">
+                <span class="theme-label">浅色</span>
+                <span class="theme-icon">☀️</span>
+                <label class="theme-switch">
+                    <input type="checkbox" id="theme-toggle">
+                    <span class="slider"></span>
+                </label>
+                <span class="theme-icon">🌙</span>
+                <span class="theme-label">深色</span>
+            </div>
+        </header>
+
+        <div class="description">
+            <p>这是一个宇宙语编码/解码工具，可以将文本转换为特殊的方块字符编码，或将这些编码转换回原始文本。</p>
+            
+            <div class="expandable">
+                <button class="expand-toggle" id="expand-btn">
+                    <span>工作原理介绍</span>
+                    <span class="expand-icon">▼</span>
+                </button>
+                <div class="expand-content">
+                    <h3>宇宙语编码原理</h3>
+                    <p>宇宙语是一种基于Unicode字符的编码系统，使用16个特殊方块字符来表示4位数据(nibble)。</p>
+                    
+                    <h4>编码过程：</h4>
+                    <ol>
+                        <li>将输入文本的每个字符转换为Unicode编码</li>
+                        <li>对于ASCII字符(0-127)，使用两个字节表示，第一个字节为0x00</li>
+                        <li>对于中文字符，使用完整的Unicode编码(两个字节)</li>
+                        <li>将每个字节拆分为两个4位数据(nibble)</li>
+                        <li>将每个nibble映射到对应的宇宙语字符</li>
+                        <li>生成校验和字符并附加到编码结果中</li>
+                    </ol>
+                    
+                    <h4>解码过程：</h4>
+                    <ol>
+                        <li>将宇宙语字符转换回nibble值</li>
+                        <li>每5个字符为一组(4个数据字符 + 1个校验字符)</li>
+                        <li>验证校验和确保数据完整性</li>
+                        <li>将nibble重新组合为字节数据</li>
+                        <li>根据字符类型(ASCII或中文)重建原始文本</li>
+                    </ol>
+                    
+                    <p>这种编码方式虽然会显著增加数据大小(约2.5倍)，但创造了视觉上独特的"宇宙语"效果。</p>
+                </div>
+            </div>
+            
+            <div class="author">作者: Aenfrisk/荷兰烈马</div>
+
+            <div class="cosmic-chars">
+                <div class="cosmic-char">▓</div>
+                <div class="cosmic-char">▗</div>
+                <div class="cosmic-char">▖</div>
+                <div class="cosmic-char">▄</div>
+                <div class="cosmic-char">▝</div>
+                <div class="cosmic-char">▐</div>
+                <div class="cosmic-char">▞</div>
+                <div class="cosmic-char">▟</div>
+                <div class="cosmic-char">▘</div>
+                <div class="cosmic-char">▚</div>
+                <div class="cosmic-char">▌</div>
+                <div class="cosmic-char">▙</div>
+                <div class="cosmic-char">▀</div>
+                <div class="cosmic-char">▜</div>
+                <div class="cosmic-char">▛</div>
+                <div class="cosmic-char">█</div>
+            </div>
+        </div>
+
+        <div class="flex-container">
+            <div>
+                <div class="panel">
+                    <h2>编码</h2>
+                    <textarea id="encode-input" placeholder="输入要编码的文本..."></textarea>
+                    <div class="button-group">
+                        <button id="encode-btn">编码</button>
+                        <button id="clear-encode" class="warning">清空</button>
+                        <button id="copy-encode">复制结果</button>
+                    </div>
+                    <div id="encode-status" class="status"></div>
+                    <textarea id="encode-output" readonly placeholder="编码结果将显示在这里..."></textarea>
+                </div>
+            </div>
+
+            <div>
+                <div class="panel">
+                    <h2>解码</h2>
+                    <textarea id="decode-input" placeholder="输入要解码的宇宙语..."></textarea>
+                    <div class="button-group">
+                        <button id="decode-btn">解码</button>
+                        <button id="clear-decode" class="warning">清空</button>
+                        <button id="copy-decode">复制结果</button>
+                    </div>
+                    <div id="decode-status" class="status"></div>
+                    <textarea id="decode-output" readonly placeholder="解码结果将显示在这里..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>处理信息</h2>
+            <div class="info-panel">
+                <div class="info-item">
+                    <div class="info-label">输入字符数</div>
+                    <div class="info-value" id="input-chars">0</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">输出字符数</div>
+                    <div class="info-value" id="output-chars">0</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">处理时间</div>
+                    <div class="info-value" id="process-time">0 ms</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">处理类型</div>
+                    <div class="info-value" id="process-type">无</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 主题切换功能
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcons = document.querySelectorAll('.theme-icon');
+        const themeLabels = document.querySelectorAll('.theme-label');
+        const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+        
+        // 检查本地存储或系统偏好
+        const currentTheme = localStorage.getItem('theme') || 
+                            (prefersDarkScheme.matches ? 'dark' : 'light');
+        
+        // 更新主题图标和标签
+        function updateThemeIcons(isDark) {
+            themeIcons.forEach(icon => {
+                icon.textContent = isDark ? '🌙' : '☀️';
+            });
+            themeLabels.forEach(label => {
+                label.textContent = isDark ? '深色' : '浅色';
+            });
+        }
+        
+        if (currentTheme === 'dark') {
+            document.body.setAttribute('data-theme', 'dark');
+            themeToggle.checked = true;
+            updateThemeIcons(true);
+        } else {
+            updateThemeIcons(false);
+        }
+        
+        themeToggle.addEventListener('change', function() {
+            if (this.checked) {
+                document.body.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+                updateThemeIcons(true);
+            } else {
+                document.body.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
+                updateThemeIcons(false);
+            }
+        });
+
+        // 折叠/展开功能
+        const expandBtn = document.getElementById('expand-btn');
+        const expandable = expandBtn.parentElement;
+        
+        expandBtn.addEventListener('click', function() {
+            expandable.classList.toggle('expanded');
+        });
+
+        // 宇宙语字符映射
+        const COSMIC_CHARS = [
+            '▓', // 0x0, U+2593
+            '▗', // 0x1, U+2597
+            '▖', // 0x2, U+2596
+            '▄', // 0x3, U+2584
+            '▝', // 0x4, U+259D
+            '▐', // 0x5, U+2590
+            '▞', // 0x6, U+259E
+            '▟', // 0x7, U+259F
+            '▘', // 0x8, U+2598
+            '▚', // 0x9, U+259A
+            '▌', // 0xa, U+258D
+            '▙', // 0xb, U+2580
+            '▀', // 0xc, U+259C
+            '▜', // 0xd, U+259B
+            '▛', // 0xe, U+2599
+            '█', // 0xf, U+2588
+        ];
+
+        // 工具函数
+        function byteToNibbles(byte) {
+            return [(byte >> 4) & 0xF, byte & 0xF];
+        }
+
+        function generateChecksum(nibbles, type) {
+            let xor = 0;
+            for (const n of nibbles) {
+                xor ^= n;
+            }
+            xor ^= type;
+            const parity = (xor.toString(2).split('1').length - 1) % 2;
+            const low3 = xor & 0x7;
+            return (parity << 3) | low3;
+        }
+
+        function validateChecksum(nibbles, type, checksumReceived) {
+            return generateChecksum(nibbles, type) === checksumReceived;
+        }
+
+        // 编码函数
+        function cosmicEncode(text) {
+            const output = [];
+            
+            for (let i = 0; i < text.length; i++) {
+                const charCode = text.charCodeAt(i);
+                let bytes, charType;
+                
+                // 判断字符类型：ASCII(0)或中文字符(1)
+                if (charCode < 128) {
+                    // ASCII字符
+                    bytes = [0x00, charCode];
+                    charType = 0;
+                } else {
+                    // 中文字符 - 使用完整的Unicode编码
+                    const code = charCode;
+                    bytes = [code >> 8, code & 0xFF];
+                    charType = 1;
+                }
+                
+                const nibbles = [];
+                for (const b of bytes) {
+                    const [h, l] = byteToNibbles(b);
+                    nibbles.push(h, l);
+                }
+                
+                const checksum = generateChecksum(nibbles, charType);
+                
+                for (const n of nibbles) {
+                    output.push(COSMIC_CHARS[n]);
+                }
+                
+                output.push(COSMIC_CHARS[checksum]);
+            }
+            
+            return output.join('');
+        }
+
+        // 解码函数
+        function cosmicDecode(cosmic) {
+            const output = [];
+            const nibbles = [];
+            
+            // 将宇宙语字符转换为nibble值
+            for (const char of cosmic) {
+                const index = COSMIC_CHARS.indexOf(char);
+                if (index !== -1) {
+                    nibbles.push(index);
+                }
+            }
+            
+            let i = 0;
+            while (i + 4 < nibbles.length) {
+                const currentNibbles = nibbles.slice(i, i + 5);
+                const dataNibbles = currentNibbles.slice(0, 4);
+                const checksum = currentNibbles[4];
+                
+                // 尝试ASCII类型
+                const validAscii = validateChecksum(dataNibbles, 0, checksum);
+                if (validAscii && dataNibbles[0] === 0 && dataNibbles[1] === 0) {
+                    const byte = (dataNibbles[2] << 4) | dataNibbles[3];
+                    if (byte >= 32 && byte <= 126) {
+                        output.push(String.fromCharCode(byte));
+                        i += 5;
+                        continue;
+                    }
+                }
+                
+                // 尝试中文类型
+                const validChinese = validateChecksum(dataNibbles, 1, checksum);
+                if (validChinese) {
+                    const byte1 = (dataNibbles[0] << 4) | dataNibbles[1];
+                    const byte2 = (dataNibbles[2] << 4) | dataNibbles[3];
+                    
+                    // 尝试构造中文字符
+                    try {
+                        const charCode = (byte1 << 8) | byte2;
+                        if (charCode > 0x7F) {
+                            output.push(String.fromCharCode(charCode));
+                            i += 5;
+                            continue;
+                        }
+                    } catch (e) {
+                        // 解码失败，继续尝试
+                    }
+                }
+                
+                // 校验失败，滑动窗口前进1位
+                i++;
+            }
+            
+            return output.join('');
+        }
+
+        // DOM操作和事件处理
+        document.getElementById('encode-btn').addEventListener('click', function() {
+            const input = document.getElementById('encode-input').value;
+            const startTime = performance.now();
+            
+            try {
+                const encoded = cosmicEncode(input);
+                document.getElementById('encode-output').value = encoded;
+                
+                const endTime = performance.now();
+                updateInfoPanel(input.length, encoded.length, endTime - startTime, '编码');
+                
+                showStatus('encode-status', '编码成功!', 'success');
+            } catch (error) {
+                showStatus('encode-status', '编码错误: ' + error.message, 'error');
+            }
+        });
+
+        document.getElementById('decode-btn').addEventListener('click', function() {
+            const input = document.getElementById('decode-input').value;
+            const startTime = performance.now();
+            
+            try {
+                const decoded = cosmicDecode(input);
+                document.getElementById('decode-output').value = decoded;
+                
+                const endTime = performance.now();
+                updateInfoPanel(input.length, decoded.length, endTime - startTime, '解码');
+                
+                showStatus('decode-status', '解码成功!', 'success');
+            } catch (error) {
+                showStatus('decode-status', '解码错误: ' + error.message, 'error');
+            }
+        });
+
+        document.getElementById('clear-encode').addEventListener('click', function() {
+            document.getElementById('encode-input').value = '';
+            document.getElementById('encode-output').value = '';
+            document.getElementById('encode-status').className = 'status';
+            resetInfoPanel();
+        });
+
+        document.getElementById('clear-decode').addEventListener('click', function() {
+            document.getElementById('decode-input').value = '';
+            document.getElementById('decode-output').value = '';
+            document.getElementById('decode-status').className = 'status';
+            resetInfoPanel();
+        });
+
+        document.getElementById('copy-encode').addEventListener('click', function() {
+            const output = document.getElementById('encode-output');
+            output.select();
+            document.execCommand('copy');
+            showStatus('encode-status', '已复制到剪贴板!', 'success');
+        });
+
+        document.getElementById('copy-decode').addEventListener('click', function() {
+            const output = document.getElementById('decode-output');
+            output.select();
+            document.execCommand('copy');
+            showStatus('decode-status', '已复制到剪贴板!', 'success');
+        });
+
+        function updateInfoPanel(inputChars, outputChars, processTime, processType) {
+            document.getElementById('input-chars').textContent = inputChars;
+            document.getElementById('output-chars').textContent = outputChars;
+            document.getElementById('process-time').textContent = processTime.toFixed(2) + ' ms';
+            document.getElementById('process-type').textContent = processType;
+        }
+
+        function resetInfoPanel() {
+            updateInfoPanel(0, 0, 0, '无');
+        }
+
+        function showStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status ${type}`;
+            
+            // 3秒后隐藏状态消息
+            setTimeout(() => {
+                element.className = 'status';
+            }, 3000);
+        }
+
+        // 初始化示例文本
+        document.getElementById('encode-input').value = "你好，世界！Hello, World! 123";
+    </script>
 </body>
 </html>
